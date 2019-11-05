@@ -72,7 +72,7 @@ public abstract class AbstractGenerator {
     private void saveSummary(List<TableVo> tables) {
         StringBuilder builder = new StringBuilder("# Summary").append("\r\n").append("* [Introduction](README.md)").append("\r\n");
         for (TableVo tableVo : tables) {
-            String name = getTableDisplay(tableVo);
+            String name = tableVo.getTable() ;
             builder.append("* [" + name + "](" + tableVo.getTable() + ".md)").append("\r\n");
         }
 
