@@ -54,7 +54,7 @@ public class Main {
     }
 
     private static String getDefaultHost() {
-        return "10.1.21.241";
+        return "10.1.21.143";
     }
 
     private static String getDefaultPort() {

@@ -72,7 +72,7 @@ public abstract class AbstractGenerator {
     private void saveSummary(List<TableVo> tables) {
         StringBuilder builder = new StringBuilder("# Summary").append("\r\n").append("* [Introduction](README.md)").append("\r\n");
         for (TableVo tableVo : tables) {
-            String name = Strings.isEmpty(tableVo.getComment()) ? tableVo.getTable() : tableVo.getComment();
+            String name = getTableDisplay(tableVo);
             builder.append("* [" + name + "](" + tableVo.getTable() + ".md)").append("\r\n");
         }
 
@@ -86,7 +86,7 @@ public abstract class AbstractGenerator {
     private void saveReadme(List<TableVo> tables) {
         StringBuilder builder = new StringBuilder("# " + dbName + "数据库文档").append("\r\n");
         for (TableVo tableVo : tables) {
-            builder.append("- [" + (Strings.isEmpty(tableVo.getComment()) ? tableVo.getTable() : tableVo.getComment()) + "]" + "(" + tableVo.getTable() + ".md)")
+            builder.append("- [" + getTableDisplay(tableVo) + "]" + "(" + tableVo.getTable() + ".md)")
                     .append("\r\n");
         }
         try {
@@ -97,16 +97,17 @@ public abstract class AbstractGenerator {
     }
 
     private void saveTableFile(TableVo table) {
-        StringBuilder builder = new StringBuilder("# " + (Strings.isBlank(table.getComment()) ? table.getTable() : table
-                .getComment()) + "(" + table.getTable() + ")").append("\r\n");
+        StringBuilder builder = new StringBuilder("# " + getTableDisplay(table)).append("\r\n");
         builder.append("| 列名   | 类型   | KEY  | 可否为空 | 注释   |").append("\r\n");
         builder.append("| ---- | ---- | ---- | ---- | ---- |").append("\r\n");
         List<ColumnVo> columnVos = table.getColumns();
         for (int i = 0; i < columnVos.size(); i++) {
             ColumnVo column = columnVos.get(i);
-            builder.append("|").append(column.getName()).append("|").append(column.getType()).append("|").append
-                    (Strings.sNull(column.getKey())).append("|").append(column.getIsNullable()).append("|").append
-                    (column.getComment()).append("|\r\n");
+            builder.append("|").append(column.getName())
+                    .append("|").append(column.getType())
+                    .append("|").append(Strings.sNull(column.getKey()))
+                    .append("|").append(column.getIsNullable())
+                    .append("|").append(replaceComment(column.getComment())).append("|\r\n");
         }
         try {
             Files.write(new File(docPath + File.separator + table.getTable() + ".md"), builder.toString());
@@ -120,5 +121,17 @@ public abstract class AbstractGenerator {
         sql.setCallback(Sqls.callback.records());
         dao.execute(sql);
         return sql.getList(Record.class);
+    }
+
+    private String getTableDisplay(TableVo table) {
+        if (Strings.isBlank(table.getComment())) {
+            return table.getTable();
+        } else {
+            return table.getTable() + "(" + table.getComment() + ")";
+        }
+    }
+
+    private String replaceComment(String comment) {
+        return comment.replaceAll("[\\r\\n]", "<br>");
     }
 }
