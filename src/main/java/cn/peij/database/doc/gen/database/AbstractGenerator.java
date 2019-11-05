@@ -72,7 +72,7 @@ public abstract class AbstractGenerator {
     private void saveSummary(List<TableVo> tables) {
         StringBuilder builder = new StringBuilder("# Summary").append("\r\n").append("* [Introduction](README.md)").append("\r\n");
         for (TableVo tableVo : tables) {
-            String name = tableVo.getTable() ;
+            String name = tableVo.getTable();
             builder.append("* [" + name + "](" + tableVo.getTable() + ".md)").append("\r\n");
         }
 
@@ -101,13 +101,17 @@ public abstract class AbstractGenerator {
         builder.append("| 列名   | 类型   | KEY  | 可否为空 | 注释   |").append("\r\n");
         builder.append("| ---- | ---- | ---- | ---- | ---- |").append("\r\n");
         List<ColumnVo> columnVos = table.getColumns();
+        boolean isLast = false;
         for (int i = 0; i < columnVos.size(); i++) {
             ColumnVo column = columnVos.get(i);
+            if (i == columnVos.size() - 1) {
+                isLast = true;
+            }
             builder.append("|").append(column.getName())
                     .append("|").append(column.getType())
                     .append("|").append(Strings.sNull(column.getKey()))
                     .append("|").append(column.getIsNullable())
-                    .append("|").append(replaceComment(column.getComment())).append("|\r\n");
+                    .append("|").append(replaceComment(column.getComment(), isLast)).append("|\r\n");
         }
         try {
             Files.write(new File(docPath + File.separator + table.getTable() + ".md"), builder.toString());
@@ -131,7 +135,14 @@ public abstract class AbstractGenerator {
         }
     }
 
-    private String replaceComment(String comment) {
-        return comment.replaceAll("[\\r\\n]", "<br>");
+    private String replaceComment(String comment, boolean isLast) {
+        // 最后一行的空格用 &nbsp; 代替
+        if (isLast && Strings.isBlank(comment)) {
+            return "&nbsp;";
+        }
+
+        // 换行符用 <br> 代替
+        // 竖线用 &#124; 代替
+        return comment.replaceAll("[\\r\\n]", "<br>").replaceAll("[\\|]", "&#124;");
     }
 }
